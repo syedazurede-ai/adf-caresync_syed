@@ -1,0 +1,31 @@
+{
+	"name": "DS_PG_Caresync",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_PG_Caresync",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Schema": {
+				"type": "string",
+				"defaultValue": "PUBLIC"
+			},
+			"table_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "PostgreSqlV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().Schema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().table_name",
+				"type": "Expression"
+			}
+		}
+	}
+}
