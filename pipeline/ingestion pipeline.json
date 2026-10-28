@@ -8,7 +8,7 @@
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
-					"retry": 0,
+					"retry": 1,
 					"retryIntervalInSeconds": 30,
 					"secureOutput": false,
 					"secureInput": false
@@ -86,10 +86,7 @@
 				"inputs": [
 					{
 						"referenceName": "DS_PG_Caresync",
-						"type": "DatasetReference",
-						"parameters": {
-							"table_name": "1"
-						}
+						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
@@ -121,6 +118,47 @@
 						"value": "@formatDateTime(utcNow(),'yyyy-MM-dd_hh:mm:ss')",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "landing to bronze",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/caresync-repo/adb-caresync-syed/landing_to_bronze",
+					"baseParameters": {
+						"source_system": {
+							"value": "@activity('Lookup1').output.firstRow.source_system",
+							"type": "Expression"
+						},
+						"table_name": {
+							"value": "@activity('Lookup1').output.firstRow.bronze_table_name",
+							"type": "Expression"
+						},
+						"landing_timestamp": {
+							"value": "@variables('UTC')",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_DB_Caresync",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
