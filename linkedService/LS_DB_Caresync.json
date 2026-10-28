@@ -1,0 +1,19 @@
+{
+	"name": "LS_DB_Caresync",
+	"properties": {
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-7405610741269341.1.azuredatabricks.net",
+			"accessToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_KeyVault_Caresync",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "Adbaccesstoken"
+			},
+			"existingClusterId": "1027-115359-5yvhqahn"
+		}
+	}
+}
