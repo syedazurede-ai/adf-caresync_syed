@@ -48,6 +48,7 @@
 						"value": "@activity('fetch table id').output.value",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "source to silver",
@@ -72,7 +73,11 @@
 								"waitOnCompletion": true,
 								"parameters": {
 									"table_id": {
-										"value": "@item().table_id",
+										"value": "@string(item().table_id)",
+										"type": "Expression"
+									},
+									"adf_run_id": {
+										"value": "@pipeline().parameters.adf_run_id",
 										"type": "Expression"
 									}
 								}
@@ -99,7 +104,43 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "insert into ctrl.audit_log (adf_run_id,table_id,stage,status,start_time)\nVALUES('@{pipeline().parameters.adf_run_id}','item().table_id','SOURCE_TO_SILVER','IN_PROGRESS',SYSUTCDATETIME());",
+											"value": "insert into ctrl.audit_log (adf_run_id,table_id,stage,status,start_time)\nVALUES('@{pipeline().parameters.adf_run_id}','string(item().table_id)','SOURCE_TO_SILVER','IN_PROGRESS',SYSUTCDATETIME());",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						},
+						{
+							"name": "update audit log_onfail",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "source to silver",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "UPDATE ctrl.audit_log set status= 'FAILED' , end_time= SYSDATETIME() where adf_run_id = '@{pipeline().parameters.adf_run_id}' and table_id='@{string(item().table_id)}'",
 											"type": "Expression"
 										}
 									}
