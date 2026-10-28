@@ -23,7 +23,6 @@
 						"referenceName": "DS_PG_Caresync",
 						"type": "DatasetReference",
 						"parameters": {
-							"Schema": "PUBLIC",
 							"table_name": {
 								"value": "@pipeline().parameters.table_id",
 								"type": "Expression"
