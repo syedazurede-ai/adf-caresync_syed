@@ -35,13 +35,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "Landing Timestamp",
+						"activity": "Check the load type",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -233,6 +227,85 @@
 					],
 					"scriptBlockExecutionTimeout": "02:00:00"
 				}
+			},
+			{
+				"name": "Check the load type",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Landing Timestamp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@not(equals(activity('Lookup1').output.firstRow.load_type , 'FULL'))",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Check Water mark",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select watermark_value from ctrl.watermark where table_id = '@{pipeline().parameters.table_id}'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "DS_AzureSQL_Caresync",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "set watermark value",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check Water mark",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "water_mark_value",
+								"value": {
+									"value": "@activity('Check Water mark').output.firstRow.watermark_value",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
 			}
 		],
 		"parameters": {
@@ -245,6 +318,9 @@
 		},
 		"variables": {
 			"UTC": {
+				"type": "String"
+			},
+			"water_mark_value": {
 				"type": "String"
 			}
 		},
