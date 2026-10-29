@@ -354,7 +354,7 @@
 									{
 										"type": "Query",
 										"text": {
-											"value": "update ctrl.watermark set watermark_value = SYSUTCDATETIME where table_id ='@{pipeline().parameters.table_id}'",
+											"value": "update ctrl.watermark set watermark_value = SYSUTCDATETIME() where table_id ='@{pipeline().parameters.table_id}'",
 											"type": "Expression"
 										}
 									}
