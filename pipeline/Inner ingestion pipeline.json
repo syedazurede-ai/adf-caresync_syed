@@ -80,6 +80,10 @@
 						"landing_timestamp": {
 							"value": "@variables('UTC')",
 							"type": "Expression"
+						},
+						"source_file_format": {
+							"value": "@activity('Lookup1').output.firstRow.source_file_format",
+							"type": "Expression"
 						}
 					}
 				},
@@ -320,7 +324,7 @@
 							"value": "adls_csv",
 							"activities": [
 								{
-									"name": "Copy ADLS",
+									"name": "Copy data1",
 									"type": "Copy",
 									"dependsOn": [],
 									"policy": {
@@ -336,19 +340,21 @@
 											"type": "BinarySource",
 											"storeSettings": {
 												"type": "AzureBlobFSReadSettings",
-												"recursive": true
+												"recursive": true,
+												"modifiedDatetimeStart": {
+													"value": "@variables('water_mark_value')",
+													"type": "Expression"
+												},
+												"deleteFilesAfterCompletion": false
 											},
 											"formatSettings": {
 												"type": "BinaryReadSettings"
 											}
 										},
 										"sink": {
-											"type": "ParquetSink",
+											"type": "BinarySink",
 											"storeSettings": {
 												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "ParquetWriteSettings"
 											}
 										},
 										"enableStaging": false
@@ -358,17 +364,21 @@
 											"referenceName": "Binary1",
 											"type": "DatasetReference",
 											"parameters": {
-												"Container": "source"
+												"Container": "source",
+												"folder_name": {
+													"value": "@activity('Lookup1').output.firstRow.source_table_name",
+													"type": "Expression"
+												}
 											}
 										}
 									],
 									"outputs": [
 										{
-											"referenceName": "DS_ADLS_Caresync",
+											"referenceName": "Binary1",
 											"type": "DatasetReference",
 											"parameters": {
 												"Container": "target",
-												"source": {
+												"folder_name": {
 													"value": "@concat(\n    activity('Lookup1').output.firstRow.source_system,\n    '/',\n    activity('Lookup1').output.firstRow.source_table_name,\n    '/',\n    variables('UTC')\n\n)",
 													"type": "Expression"
 												}
